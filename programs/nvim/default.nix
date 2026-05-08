@@ -16,6 +16,7 @@
     ./languages/mdc.nix
     ./languages/typescript.nix
     ./languages/haskell.nix
+    ./languages/yaml.nix
   ];
 
   env = {
