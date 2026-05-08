@@ -9,6 +9,7 @@
     ./languages/typescript.nix
     ./languages/haskell.nix
     ./languages/nix.nix
+    ./languages/yaml.nix
   ];
 
   home = {
