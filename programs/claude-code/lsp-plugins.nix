@@ -5,4 +5,9 @@
   enabled = {
     "typescript-lsp@claude-plugins-official" = true;
   };
+
+  # Loaded only during web UI sessions via `claude-web`. Stripped on normal `claude` launch.
+  webUI = {
+    "frontend-design@claude-plugins-official" = true;
+  };
 }
