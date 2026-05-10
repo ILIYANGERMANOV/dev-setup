@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, theme ? "auto", ... }:
 
 let
-  statusline = import ./statusline.nix { inherit pkgs; };
+  statusline = import ./statusline.nix { inherit pkgs theme; };
   lspPlugins = import ./lsp-plugins.nix;
 
   # Merges managed keys into ~/.claude/settings.json, preserving user-set values.

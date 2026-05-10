@@ -129,6 +129,8 @@ in
         enable = true;
         settings.flavour = "latte";
       };
+      # Latte base colour — avoids black notify background on a light theme
+      plugins.notify.settings.backgroundColour = lib.mkForce "#eff1f5";
     })
 
     # --- THEME: CATPPUCCIN DARK (Mocha) ---
@@ -166,8 +168,11 @@ in
           -- Linux / GNOME
           return vim.fn.system("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null"):find("dark") ~= nil
         end
-        require("catppuccin").setup({ flavour = _is_dark_mode() and "mocha" or "latte" })
+        local _dark = _is_dark_mode()
+        require("catppuccin").setup({ flavour = _dark and "mocha" or "latte" })
         vim.cmd("colorscheme catppuccin")
+        -- Match notify background to the resolved theme so it looks correct on light
+        require("notify").setup({ background_colour = _dark and "#000000" or "#eff1f5" })
       '';
     })
 
