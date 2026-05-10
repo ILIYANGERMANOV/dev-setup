@@ -1,5 +1,11 @@
-{ pkgs, ... }:
-
+{ pkgs, themeConfig, ... }:
+let
+  ghosttyTheme = {
+    dark = "TokyoNight";
+    light = "TokyoNight Day";
+    auto = "light:TokyoNight Day,dark:TokyoNight";
+  }.${themeConfig};
+in
 {
   # fontconfig is Linux-only; macOS locates fonts via ~/Library/Fonts automatically
   fonts.fontconfig.enable = pkgs.stdenv.isLinux;
@@ -11,7 +17,7 @@
       enableZshIntegration = true;
 
       settings = {
-        theme = "tokyonight";
+        theme = ghosttyTheme;
         font-family = "JetBrainsMono Nerd Font";
         font-size = 20;
 

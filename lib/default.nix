@@ -2,7 +2,7 @@
 let
   inherit (inputs.nixpkgs) lib;
 
-  mkNixosSystem = hostname: system:
+  mkNixosSystem = hostname: system: { theme ? "auto" }:
     inputs.nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = { inherit inputs root; };
@@ -11,6 +11,8 @@ let
         inputs.sops-nix.nixosModules.sops
         inputs.home-manager.nixosModules.home-manager
         inputs.lanzaboote.nixosModules.lanzaboote
+        "${root}/modules/theme.nix"
+        { myConfig.theme = theme; }
         "${root}/modules/nixos/common.nix"
         "${root}/modules/nixos/desktop.nix"
         "${root}/modules/nixos/audio.nix"
@@ -23,12 +25,14 @@ let
       ];
     };
 
-  mkDarwinSystem = hostname: system:
+  mkDarwinSystem = hostname: system: { theme ? "auto" }:
     inputs.nix-darwin.lib.darwinSystem {
       inherit system;
       specialArgs = { inherit inputs root; };
       modules = [
         inputs.home-manager.darwinModules.home-manager
+        "${root}/modules/theme.nix"
+        { myConfig.theme = theme; }
         "${root}/modules/macos/common.nix"
         "${root}/modules/macos/user.nix"
         "${root}/modules/macos/home-manager.nix"

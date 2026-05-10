@@ -40,13 +40,13 @@
       });
 
       nixosConfigurations = {
-        lenovo-old = lib.mkNixosSystem "lenovo-old" "x86_64-linux";
-        # next-host = lib.mkNixosSystem "next-host" "x86_64-linux";
+        lenovo-old = lib.mkNixosSystem "lenovo-old" "x86_64-linux" { };
+        # next-host = lib.mkNixosSystem "next-host" "x86_64-linux" { };
       };
 
       darwinConfigurations = {
-        macos-main = lib.mkDarwinSystem "macos-main" "aarch64-darwin";
-        macos-work = lib.mkDarwinSystem "macos-work" "aarch64-darwin";
+        macos-main = lib.mkDarwinSystem "macos-main" "aarch64-darwin" { };
+        macos-work = lib.mkDarwinSystem "macos-work" "aarch64-darwin" { };
       };
     };
 }

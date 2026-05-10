@@ -7,6 +7,7 @@
     extraSpecialArgs = {
       inherit root;
       userConfig = config.myConfig.user;
+      themeConfig = config.myConfig.theme;
     };
   };
 }

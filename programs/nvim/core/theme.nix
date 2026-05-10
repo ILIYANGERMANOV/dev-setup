@@ -5,7 +5,7 @@ let
 in
 {
   options.myNixVim.style = lib.mkOption {
-    type = lib.types.enum [ "catppuccin_light" "catppuccin_dark" "tokyonight" ];
+    type = lib.types.enum [ "catppuccin_light" "catppuccin_dark" "tokyonight" "auto" ];
     default = "catppuccin_dark";
     description = "Select the color theme for NeoVim.";
   };
@@ -153,6 +153,22 @@ in
           };
         };
       };
+    })
+
+    # --- THEME: AUTO (follows system appearance) ---
+    (lib.mkIf (cfg.style == "auto") {
+      colorschemes.catppuccin.enable = true;
+      extraConfigLua = ''
+        local function _is_dark_mode()
+          if vim.fn.has("mac") == 1 then
+            return vim.trim(vim.fn.system("defaults read -g AppleInterfaceStyle 2>/dev/null")) == "Dark"
+          end
+          -- Linux / GNOME
+          return vim.fn.system("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null"):find("dark") ~= nil
+        end
+        require("catppuccin").setup({ flavour = _is_dark_mode() and "mocha" or "latte" })
+        vim.cmd("colorscheme catppuccin")
+      '';
     })
 
   ];
