@@ -1,14 +1,59 @@
-{ pkgs }:
+{ pkgs, theme }:
 
 let
+  # Colors tuned for dark terminals (bright/pastel)
+  darkVars = ''
+    CYAN='\033[38;5;116m'
+    GREEN='\033[38;5;114m'
+    BLUE='\033[38;5;111m'
+    GREY='\033[38;5;245m'
+    YELLOW='\033[38;5;215m'
+    RED='\033[38;5;210m'
+    RESET='\033[0m'
+  '';
+
+  # Colors tuned for light terminals (dark/saturated — readable on white)
+  lightVars = ''
+    CYAN='\033[38;5;30m'
+    GREEN='\033[38;5;28m'
+    BLUE='\033[38;5;26m'
+    GREY='\033[38;5;240m'
+    YELLOW='\033[38;5;166m'
+    RED='\033[38;5;160m'
+    RESET='\033[0m'
+  '';
+
+  # Shell snippet injected at the top of every sub-script.
+  # For "auto": sets light colors first (safe default), then overrides to dark
+  # if the system reports dark mode.
+  colorSetup =
+    if theme == "dark" then darkVars
+    else if theme == "light" then lightVars
+    else ''
+      ${lightVars}
+      _detect_dark=false
+      if command -v defaults > /dev/null 2>&1; then
+        if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -q "Dark"; then
+          _detect_dark=true
+        fi
+      elif command -v gsettings > /dev/null 2>&1; then
+        if gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | grep -q "dark"; then
+          _detect_dark=true
+        fi
+      fi
+      if [[ "$_detect_dark" == "true" ]]; then
+        ${darkVars}
+      fi
+    '';
+
   # Outputs: "<cyan>dir</cyan>  <green>branch</green>"
+  # SC2034: colorSetup defines the full palette; only CYAN/GREEN/RESET used here.
   dir = pkgs.writeShellApplication {
     name = "claude-statusline-dir";
     runtimeInputs = with pkgs; [ git ];
+    excludeShellChecks = [ "SC2034" ];
     text = ''
-      CYAN='\033[38;5;116m'
-      GREEN='\033[38;5;114m'
-      RESET='\033[0m'
+      ${colorSetup}
 
       cwd="''${1:-}"
       [[ -z "$cwd" ]] && exit 0
@@ -32,12 +77,13 @@ let
   };
 
   # Outputs: "  <blue>Claude Sonnet 4.6</blue>"
+  # SC2034: colorSetup defines the full palette; only BLUE/RESET used here.
   model = pkgs.writeShellApplication {
     name = "claude-statusline-model";
     runtimeInputs = [ ];
+    excludeShellChecks = [ "SC2034" ];
     text = ''
-      BLUE='\033[38;5;111m'
-      RESET='\033[0m'
+      ${colorSetup}
 
       model="''${1:-}"
       [[ -z "$model" ]] && exit 0
@@ -47,14 +93,13 @@ let
   };
 
   # Outputs: "  <color>▓▓▓░░ 60% (reset 2h30m)</color>"
+  # SC2034: colorSetup defines the full palette; only GREY/YELLOW/RED/RESET used here.
   usage = pkgs.writeShellApplication {
     name = "claude-statusline-usage";
     runtimeInputs = with pkgs; [ coreutils ];
+    excludeShellChecks = [ "SC2034" ];
     text = ''
-      GREY='\033[38;5;245m'
-      YELLOW='\033[38;5;215m'
-      RED='\033[38;5;210m'
-      RESET='\033[0m'
+      ${colorSetup}
 
       used_pct="''${1:-}"
       resets_at="''${2:-}"
@@ -97,11 +142,14 @@ let
   };
 
   # Outputs: "  <badge> 30k / 200k (15%) </badge>"
+  # SC2034: colorSetup defines the full palette; only GREEN/YELLOW/RED/RESET used here.
   tokens = pkgs.writeShellApplication {
     name = "claude-statusline-tokens";
     runtimeInputs = [ ];
+    excludeShellChecks = [ "SC2034" ];
     text = ''
-      RESET='\033[0m'
+      ${colorSetup}
+      BOLD='\033[1m'
 
       ctx_size="''${1:-}"
       used_pct="''${2:-}"
@@ -113,11 +161,11 @@ let
       ctx_k=$(( ctx_size / 1000 ))
 
       if [[ "$pct" -ge 80 ]]; then
-        printf '%b' "  \033[1;38;5;210m⚠ ''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
+        printf '%b' "  ''${BOLD}''${RED}⚠ ''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
       elif [[ "$pct" -ge 50 ]]; then
-        printf '%b' "  \033[1;38;5;215m~ ''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
+        printf '%b' "  ''${BOLD}''${YELLOW}~ ''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
       else
-        printf '%b' "  \033[38;5;114m''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
+        printf '%b' "  ''${GREEN}''${toks_k}k / ''${ctx_k}k (''${pct}%)''${RESET}"
       fi
     '';
   };

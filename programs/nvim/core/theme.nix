@@ -5,7 +5,7 @@ let
 in
 {
   options.myNixVim.style = lib.mkOption {
-    type = lib.types.enum [ "catppuccin_light" "catppuccin_dark" "tokyonight" ];
+    type = lib.types.enum [ "catppuccin_light" "catppuccin_dark" "tokyonight" "auto" ];
     default = "catppuccin_dark";
     description = "Select the color theme for NeoVim.";
   };
@@ -129,6 +129,33 @@ in
         enable = true;
         settings.flavour = "latte";
       };
+      # Latte base colour — avoids black notify background on a light theme
+      plugins.notify.settings.backgroundColour = lib.mkForce "#eff1f5";
+      # Override notify highlight groups so titles/icons are visible on light bg.
+      # Hooked on ColorScheme so they survive any colorscheme reload.
+      extraConfigLua = ''
+        vim.api.nvim_create_autocmd("ColorScheme", {
+          pattern = "*",
+          callback = function()
+            -- Catppuccin Latte palette colours — dark enough to read on #eff1f5
+            vim.api.nvim_set_hl(0, "NotifyERRORTitle",  { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyERRORIcon",   { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyERRORBorder", { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyWARNTitle",   { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyWARNIcon",    { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyWARNBorder",  { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyINFOTitle",   { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyINFOIcon",    { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyINFOBorder",  { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGTitle",  { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGIcon",   { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGBorder", { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyTRACETitle",  { fg = "#8839ef" })
+            vim.api.nvim_set_hl(0, "NotifyTRACEIcon",   { fg = "#8839ef" })
+            vim.api.nvim_set_hl(0, "NotifyTRACEBorder", { fg = "#8839ef" })
+          end,
+        })
+      '';
     })
 
     # --- THEME: CATPPUCCIN DARK (Mocha) ---
@@ -153,6 +180,47 @@ in
           };
         };
       };
+    })
+
+    # --- THEME: AUTO (follows system appearance) ---
+    (lib.mkIf (cfg.style == "auto") {
+      colorschemes.catppuccin.enable = true;
+      extraConfigLua = ''
+        local function _is_dark_mode()
+          if vim.fn.has("mac") == 1 then
+            return vim.trim(vim.fn.system("defaults read -g AppleInterfaceStyle 2>/dev/null")) == "Dark"
+          end
+          -- Linux / GNOME
+          return vim.fn.system("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null"):find("dark") ~= nil
+        end
+        local _dark = _is_dark_mode()
+        require("catppuccin").setup({ flavour = _dark and "mocha" or "latte" })
+        vim.cmd("colorscheme catppuccin")
+        -- Match notify background to the resolved theme so it looks correct on light
+        require("notify").setup({ background_colour = _dark and "#000000" or "#eff1f5" })
+        -- On light (latte) override notify highlight groups so titles/icons are visible
+        if not _dark then
+          local function _set_notify_hl()
+            vim.api.nvim_set_hl(0, "NotifyERRORTitle",  { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyERRORIcon",   { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyERRORBorder", { fg = "#d20f39" })
+            vim.api.nvim_set_hl(0, "NotifyWARNTitle",   { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyWARNIcon",    { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyWARNBorder",  { fg = "#df8e1d" })
+            vim.api.nvim_set_hl(0, "NotifyINFOTitle",   { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyINFOIcon",    { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyINFOBorder",  { fg = "#40a02b" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGTitle",  { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGIcon",   { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyDEBUGBorder", { fg = "#7c7f93" })
+            vim.api.nvim_set_hl(0, "NotifyTRACETitle",  { fg = "#8839ef" })
+            vim.api.nvim_set_hl(0, "NotifyTRACEIcon",   { fg = "#8839ef" })
+            vim.api.nvim_set_hl(0, "NotifyTRACEBorder", { fg = "#8839ef" })
+          end
+          _set_notify_hl()
+          vim.api.nvim_create_autocmd("ColorScheme", { pattern = "*", callback = _set_notify_hl })
+        end
+      '';
     })
 
   ];
