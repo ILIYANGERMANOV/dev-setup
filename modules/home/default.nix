@@ -6,6 +6,7 @@
     ./bitwarden.nix
     ./gitui.nix
     ./git.nix
+    ./kalker.nix
     ./languages/typescript.nix
     ./languages/haskell.nix
     ./languages/nix.nix
