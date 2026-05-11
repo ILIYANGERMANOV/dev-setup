@@ -21,11 +21,10 @@
       else "/home/${userConfig.name}";
     stateVersion = "25.11";
     packages = with pkgs; [
-      gh
       wget
       curl
       htop
-      firefox
+      firefox # Useful white setting up NixOS
       just
     ];
   };

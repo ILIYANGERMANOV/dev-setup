@@ -1,6 +1,7 @@
 { pkgs, userConfig, ... }: {
   home.packages = with pkgs; [
     pre-commit
+    gh
   ];
 
   programs.git = {
