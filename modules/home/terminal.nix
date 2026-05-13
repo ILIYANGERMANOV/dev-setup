@@ -63,8 +63,8 @@ in
         gds = "git diff --staged";
 
         # Git — staging & committing
-        ga = "git add";
-        gc = "git commit -m";
+        gad = "git add";
+        gcm = "git commit -m";
 
         # Git — branches
         gb = "git branch";
