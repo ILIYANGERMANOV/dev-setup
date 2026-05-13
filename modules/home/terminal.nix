@@ -64,7 +64,7 @@ in
 
         # Git — staging & committing
         ga = "git add";
-        gc = "git commit -m";
+        gcm = "git commit -m";
 
         # Git — branches
         gb = "git branch";
