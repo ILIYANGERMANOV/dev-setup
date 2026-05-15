@@ -17,6 +17,7 @@
     ./languages/typescript.nix
     ./languages/haskell.nix
     ./languages/yaml.nix
+    ./languages/elixir.nix
   ];
 
   env = {
